@@ -2,33 +2,44 @@ from pynput.mouse import Listener
 from pynput.mouse import Button, Controller
 import time 
 
-mouse = Controller()
+# Constants
+HOLD_TIME = 0.5  #seconds
+POLL_TIME = 0.05 #seconds
+
+# Global Variables
 gTime = 0.0
 gPressed = False
 
+# Functions
 def on_click(x, y, button, pressed):
     global gTime
     global gPressed
-    print('{0} at {1}'.format(
-        'Pressed' if pressed else 'Released',
-        (x, y)))
+
     if pressed:
         gTime=time.time()*1000.0
         gPressed = True
     if not pressed:
         gPressed = False
 
-
-with Listener(on_click=on_click) as listener:
-    listener.join()
-
+# Main
 def main():
-    print("Hello World!")
-    if gPressed == True:
-        if ((gTime - time.time()*1000) > 1000):
-            print(gTime)
-            mouse.click(Button.left, 2)
-    time.sleep(0.1)
+    global gPressed
+    global gTime
+    print("Main Started")
+
+    mouseCont = Controller()
+    print("Mouse Controller Started")
+
+    listener = Listener(on_click=on_click)
+    listener.start()
+
+    while True:
+        if gPressed == True:
+            print("gTime ="+ str(gTime) +" clicktime =" + str(time.time()*1000 - gTime))
+            if ((time.time()*1000-gTime) > HOLD_TIME*1000):
+                print(gTime)
+                mouseCont.click(Button.left, 2)
+        time.sleep(POLL_TIME)
 
 if __name__ == "__main__":
     main()
